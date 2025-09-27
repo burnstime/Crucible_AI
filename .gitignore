@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+.envrc
+logs/
+experiments/run_logs/
+models/
+crucible_ai.zip
+file_tree.txt
+verification.txt
+summary.txt
+infra/docker/
+infra/prometheus/

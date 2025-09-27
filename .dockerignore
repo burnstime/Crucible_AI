@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+logs/
+experiments/run_logs/
+models/
+crucible_ai.zip
+file_tree.txt
+verification.txt
+summary.txt
+infra/docker/
+infra/prometheus/
+
+# Docker secrets (do not include in build context)
+minio_root_user.txt
+minio_root_password.txt

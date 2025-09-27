@@ -1,0 +1,2 @@
+# Docker secrets for MinIO (do not commit to VCS)
+minio
