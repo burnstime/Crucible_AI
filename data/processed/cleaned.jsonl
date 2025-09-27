@@ -1,0 +1,2 @@
+{"timestamp": 1727400000, "session_id": "abc123", "input": "Hello!", "model_response": "Hi there!", "model_tag": "stable", "latency": 0.12, "metadata": {"foo": "bar"}, "served_by": "local"}
+{"timestamp": 1727400001, "session_id": "def456", "input": "What is the capital of France?", "model_response": "Paris is the capital of France.", "model_tag": "stable", "latency": 0.15, "metadata": {}, "served_by": "local"}

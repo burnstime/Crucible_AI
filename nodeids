@@ -1,0 +1,5 @@
+[
+  "crucible/tests/test_api.py::test_generate_and_logging",
+  "crucible/tests/test_safety.py::test_safety",
+  "crucible/tests/test_training_smoke.py::test_training_smoke"
+]
