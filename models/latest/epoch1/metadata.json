@@ -1,0 +1,1 @@
+{"git_sha": "demo123sha", "dataset_hash": "abc123hash", "hyperparams": {"checkpoint": "distilgpt2", "epochs": 1, "batch_size": 2}, "metrics": {"train_loss": 1.0, "val_loss": 1.2}}

@@ -1,0 +1,26 @@
+# crucible_ai summary
+
+## Open Issues / TODOs
+- Some features (e.g., MinIO storage, advanced canary metrics, and full MLflow registry automation) are stubbed or simplified for local reproducibility.
+- The base model is set to `distilgpt2` for speed and minimal resource use. For production, swap to a larger model and update requirements.
+- Safety tests use a minimal profanity list and simple hallucination heuristics; expand for real-world use.
+- Canary routing is deterministic by session_id, but only two tags (`stable`, `vnext`) are mapped to the same model for demo. Update registry logic for real multi-model deployment.
+- Retrain pipeline is synchronous in Celery worker; for large jobs, consider splitting into subtasks.
+- MLflow is configured for local sqlite backend; for production, use a remote DB and artifact store.
+- Prometheus config is not included; add infra/prometheus/ files for custom metrics scraping if needed.
+- No real S3/MinIO integration in storage.py; extend for artifact upload/download as needed.
+
+## Next Steps
+- Add more robust data validation and cleaning rules.
+- Expand test coverage, especially for edge cases and error handling.
+- Integrate with real S3/MinIO and secure credentials for production.
+- Harden API security (rate limiting, auth, etc) for public deployment.
+- Add more granular Prometheus metrics and dashboards.
+- Automate model promotion and rollback policies.
+- Add more comprehensive CI/CD (e.g., integration tests, canary rollout checks).
+
+## Assumptions
+- Python 3.11, all dependencies pinned and tested locally.
+- Model tags are managed via `models/registry.json`.
+- Safety threshold for profanity is 10% (configurable in test_safety.py).
+- All services are local and run via docker-compose for reproducibility.

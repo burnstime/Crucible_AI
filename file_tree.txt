@@ -1,0 +1,38 @@
+crucible_ai/
+├─ README.md
+├─ requirements.txt
+├─ docker-compose.yml
+├─ Dockerfile
+├─ .github/workflows/ci.yml
+├─ .gitignore
+├─ .dockerignore
+├─ Makefile
+├─ crucible/
+│  ├─ __init__.py
+│  ├─ cli.py
+│  ├─ api/
+│  │  ├─ __init__.py
+│  │  ├─ main.py
+│  │  ├─ model_server.py
+│  │  └─ canary.py
+│  ├─ trainer/
+│  │  ├─ __init__.py
+│  │  ├─ train.py
+│  │  └─ dataset.py
+│  ├─ tools/
+│  │  ├─ data_cleaning.py
+│  │  ├─ mlflow_utils.py
+│  │  └─ storage.py
+│  ├─ scheduler/
+│  │  ├─ __init__.py
+│  │  └─ retrain_worker.py
+│  └─ tests/
+│     ├─ test_api.py
+│     ├─ test_training_smoke.py
+│     └─ test_safety.py
+├─ logs/
+├─ experiments/
+│  └─ run_reports/
+└─ infra/
+   ├─ docker/
+   └─ prometheus/

@@ -1,0 +1,32 @@
+# crucible_ai verification
+
+## requirements.txt (pinned versions)
+fastapi==0.110.2
+uvicorn==0.29.0
+transformers==4.40.2
+torch==2.2.2
+mlflow==2.11.3
+celery==5.3.6
+redis==5.0.4
+minio==7.2.5
+prometheus_client==0.20.0
+click==8.1.7
+pytest==8.2.1
+black==24.4.2
+flake8==7.0.0
+
+## pytest -q output
+(pytest output here after running tests)
+
+## docker compose up --build -d (trimmed logs)
+(docker-compose logs here after build and up)
+
+## curl sample
+curl -X POST http://localhost:8000/generate -H "Content-Type: application/json" -d '{"input": "Hello!", "session_id": "abc123"}'
+(response JSON here)
+
+## MLflow UI
+MLflow UI reachable at: http://localhost:5000
+
+## CI run results
+(CI output here after local workflow simulation)
