@@ -12,6 +12,7 @@ class InteractionDataset(Dataset):
         sep: str = "<|sep|>",
     ):
         self.samples = []
+        self.max_len = max_len
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         with open(log_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -28,4 +29,10 @@ class InteractionDataset(Dataset):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        return self.samples[idx]
+        tokens = self.samples[idx]
+        # Pad to max_len for consistent batch sizes
+        if len(tokens) < self.max_len:
+            tokens = tokens + [self.tokenizer.pad_token_id or 0] * (self.max_len - len(tokens))
+        else:
+            tokens = tokens[:self.max_len]
+        return tokens

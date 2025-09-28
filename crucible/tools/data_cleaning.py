@@ -1,6 +1,7 @@
 import re
 import json
 import os
+import hashlib
 
 
 def strip_pii(text: str) -> str:
@@ -29,26 +30,59 @@ def dedupe_by_input(path_in: str, path_out: str):
         path_out, "w", encoding="utf-8"
     ) as fout:
         for line in fin:
-            entry = json.loads(line)
-            inp = normalize_text(entry.get("input", ""))
-            inp_hash = hash(inp)
-            if inp_hash not in seen and inp:
-                seen.add(inp_hash)
-                fout.write(json.dumps(entry) + "\n")
+            try:
+                entry = json.loads(line.strip())
+                inp = normalize_text(entry.get("input", ""))
+                # Use SHA-256 for secure hashing
+                inp_hash = hashlib.sha256(inp.encode('utf-8')).hexdigest()
+                if inp_hash not in seen and inp:
+                    seen.add(inp_hash)
+                    fout.write(json.dumps(entry) + "\n")
+            except json.JSONDecodeError:
+                # Skip malformed JSON lines
+                continue
 
 
 def clean_logs():
     in_path = "logs/interaction_logs.jsonl"
     out_path = "data/processed/cleaned.jsonl"
+    temp_path = "data/processed/cleaned_temp.jsonl"
+    
+    # Ensure input file exists
+    if not os.path.exists(in_path):
+        raise FileNotFoundError(f"Input file {in_path} not found")
+    
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with open(in_path, "r", encoding="utf-8") as fin, open(
-        out_path, "w", encoding="utf-8"
-    ) as fout:
-        for line in fin:
-            entry = json.loads(line)
-            entry["input"] = strip_pii(normalize_text(entry.get("input", "")))
-            entry["model_response"] = strip_pii(
-                normalize_text(entry.get("model_response", ""))
-            )
-            fout.write(json.dumps(entry) + "\n")
-    dedupe_by_input(out_path, out_path)
+    
+    # Use atomic write to prevent data corruption
+    try:
+        with open(in_path, "r", encoding="utf-8") as fin, open(
+            temp_path, "w", encoding="utf-8"
+        ) as fout:
+            for line_num, line in enumerate(fin, 1):
+                try:
+                    entry = json.loads(line.strip())
+                    entry["input"] = strip_pii(normalize_text(entry.get("input", "")))
+                    entry["model_response"] = strip_pii(
+                        normalize_text(entry.get("model_response", ""))
+                    )
+                    fout.write(json.dumps(entry) + "\n")
+                except json.JSONDecodeError as e:
+                    print(f"Warning: Skipping malformed JSON at line {line_num}: {e}")
+                    continue
+                except Exception as e:
+                    print(f"Warning: Error processing line {line_num}: {e}")
+                    continue
+        
+        # Deduplicate using temp file
+        dedupe_by_input(temp_path, out_path)
+        
+        # Remove temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+            
+    except Exception as e:
+        # Clean up temp file on error
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise RuntimeError(f"Failed to clean logs: {e}")

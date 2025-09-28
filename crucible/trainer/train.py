@@ -81,32 +81,52 @@ def main():
     for epoch in range(args.epochs):
         model.train()
         total_loss = 0
+        optimizer.zero_grad()  # Initialize gradients
+        
         for i, batch in enumerate(train_loader):
-            inputs = torch.tensor(batch).to(device)
-            optimizer.zero_grad()
+            # Convert batch to tensor and move to device
+            if isinstance(batch, list):
+                inputs = torch.stack([torch.tensor(x) for x in batch]).to(device)
+            else:
+                inputs = torch.tensor(batch).to(device)
+            
             if scaler:
                 with torch.cuda.amp.autocast():
                     outputs = model(inputs, labels=inputs)
-                    loss = outputs.loss
+                    loss = outputs.loss / args.accumulation_steps  # Scale loss for accumulation
                 scaler.scale(loss).backward()
                 if (i + 1) % args.accumulation_steps == 0:
                     scaler.step(optimizer)
                     scaler.update()
                     scheduler.step()
+                    optimizer.zero_grad()  # Clear gradients after step
             else:
                 outputs = model(inputs, labels=inputs)
-                loss = outputs.loss
+                loss = outputs.loss / args.accumulation_steps  # Scale loss for accumulation
                 loss.backward()
                 if (i + 1) % args.accumulation_steps == 0:
                     optimizer.step()
                     scheduler.step()
-            total_loss += loss.item()
+                    optimizer.zero_grad()  # Clear gradients after step
+            
+            total_loss += loss.item() * args.accumulation_steps  # Unscale for logging
+            
+            # Clear cache periodically to prevent memory buildup
+            if i % 10 == 0:
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+                
         avg_train_loss = total_loss / len(train_loader)
-        val_loss = evaluate(model, val_loader, device)
-        print(
-            f"Epoch {epoch+1}: train_loss={avg_train_loss:.4f}, "
-            f"val_loss={val_loss:.4f}"
-        )
+        if len(val_loader) > 0:
+            val_loss = evaluate(model, val_loader, device)
+            print(
+                f"Epoch {epoch+1}: train_loss={avg_train_loss:.4f}, "
+                f"val_loss={val_loss:.4f}"
+            )
+        else:
+            val_loss = float('inf')
+            print(f"Epoch {epoch+1}: train_loss={avg_train_loss:.4f} (no validation data)")
+        
+        # Save model if validation loss improved
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             save_path = os.path.join(args.out_dir, f"epoch{epoch+1}")
@@ -125,6 +145,9 @@ def main():
             with open(os.path.join(save_path, "metadata.json"), "w") as f:
                 json.dump(meta, f, indent=2)
             log_mlflow_run(meta, save_path)
+        
+        # Clear cache after each epoch
+        torch.cuda.empty_cache() if torch.cuda.is_available() else None
 
 
 def evaluate(model, loader, device):

@@ -12,11 +12,16 @@ DEFAULT_MODEL = "distilgpt2"
 def load_model(checkpoint_or_path: str = DEFAULT_MODEL, device: str = "cpu"):
     with MODEL_LOCK:
         if checkpoint_or_path not in MODEL_CACHE:
-            tokenizer = AutoTokenizer.from_pretrained(checkpoint_or_path)
-            model = AutoModelForCausalLM.from_pretrained(checkpoint_or_path)
-            model.to(device)
-            MODEL_CACHE[checkpoint_or_path] = model
-            TOKENIZER_CACHE[checkpoint_or_path] = tokenizer
+            try:
+                tokenizer = AutoTokenizer.from_pretrained(checkpoint_or_path)
+                model = AutoModelForCausalLM.from_pretrained(checkpoint_or_path)
+                model.to(device)
+                model.eval()  # Set to evaluation mode
+                MODEL_CACHE[checkpoint_or_path] = model
+                TOKENIZER_CACHE[checkpoint_or_path] = tokenizer
+            except Exception as e:
+                # If loading fails, don't cache the failure
+                raise RuntimeError(f"Failed to load model {checkpoint_or_path}: {e}")
     return MODEL_CACHE[checkpoint_or_path], TOKENIZER_CACHE[checkpoint_or_path]
 
 

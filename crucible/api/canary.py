@@ -18,8 +18,6 @@ LATENCY = Histogram(
     ["served_by", "latency_bucket"],
 )
 
-from typing import Optional
-
 
 def select_model_tag(
     session_id: Optional[str] = None,
